@@ -967,6 +967,36 @@
         color: #10b981;
     }
 
+    /* Analysis Preview Section */
+    .analysis-preview-section {
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+    .analysis-preview-section h4 {
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .analysis-preview-container {
+        display: inline-block;
+        max-width: 400px;
+    }
+
+    .analysis-preview-container .file-preview {
+        max-width: 400px;
+        max-height: 250px;
+    }
+
+    .analysis-preview-container .file-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-top: 1rem;
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
         .demo-container {
@@ -1022,6 +1052,11 @@
             max-width: 250px;
             max-height: 150px;
         }
+
+        .analysis-preview-container .file-preview {
+            max-width: 300px;
+            max-height: 200px;
+        }
     }
 
     @media (max-width: 480px) {
@@ -1045,6 +1080,11 @@
         .file-preview {
             max-width: 200px;
             max-height: 120px;
+        }
+
+        .analysis-preview-container .file-preview {
+            max-width: 250px;
+            max-height: 150px;
         }
     }
 </style>
@@ -1094,6 +1134,18 @@
             <div class="analysis-section" id="analysisSection" style="display: none;">
                 <div class="analysis-header">
                     <h3>Analysis in Progress</h3>
+                    
+                    <!-- Video Preview During Analysis - ONLY ONE PREVIEW NOW -->
+                    <div class="analysis-preview-section">
+                        <h4>Analyzing Video:</h4>
+                        <div class="analysis-preview-container">
+                            <div class="file-preview" id="analysisFilePreview">
+                                <!-- Analysis preview will be inserted here -->
+                            </div>
+                            <p class="file-name" id="analysisFileName"></p>
+                        </div>
+                    </div>
+                    
                     <div class="analysis-steps">
                         <div class="step active" id="step1">
                             <span class="step-number">1</span>
@@ -1206,7 +1258,7 @@
                         <i class="fas fa-redo"></i>Analyze Another Video
                     </button>
                     <button class="btn btn-primary" id="downloadReport">
-                        <i class="fas fa-download"></i>Download Report
+                        <i class="fas fa-download"></i>Download Detailed Report
                     </button>
                 </div>
             </div>
@@ -1276,6 +1328,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const filePreview = document.getElementById('filePreview');
     const fileName = document.getElementById('fileName');
     
+    // Analysis preview elements
+    const analysisFilePreview = document.getElementById('analysisFilePreview');
+    const analysisFileName = document.getElementById('analysisFileName');
+    
     // Steps for analysis progress
     const step1 = document.getElementById('step1');
     const step2 = document.getElementById('step2');
@@ -1305,6 +1361,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const analyzeAnotherBtn = document.getElementById('analyzeAnother');
     const downloadReportBtn = document.getElementById('downloadReport');
 
+    // Store current file and analysis data for detailed report
+    let currentFile = null;
+    let currentAnalysisData = null;
+
     // Event listener for upload button
     uploadButton.addEventListener('click', function() {
         videoFileInput.click();
@@ -1314,6 +1374,7 @@ document.addEventListener('DOMContentLoaded', function() {
     videoFileInput.addEventListener('change', function(e) {
         if (e.target.files.length > 0) {
             const file = e.target.files[0];
+            currentFile = file; // Store the file for later use
             showFilePreview(file);
             handleFileUpload(file);
         }
@@ -1337,6 +1398,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const files = e.dataTransfer.files;
         if (files.length > 0) {
             const file = files[0];
+            currentFile = file; // Store the file for later use
             showFilePreview(file);
             handleFileUpload(file);
         }
@@ -1412,7 +1474,75 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadArea.classList.add('has-file');
     }
 
-    // Handle file upload
+    // Function to create analysis preview - ONLY ONE PREVIEW NOW
+    function createAnalysisPreview(file) {
+        // Clear previous analysis preview
+        analysisFilePreview.innerHTML = '';
+        analysisFileName.textContent = '';
+        
+        // Show file name
+        analysisFileName.textContent = file.name;
+        
+        // Create preview based on file type
+        if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.controls = true;
+            video.muted = true;
+            video.autoplay = true;
+            video.loop = true;
+            video.style.width = '100%';
+            video.style.height = '100%';
+            video.style.objectFit = 'cover';
+            video.innerHTML = 'Your browser does not support the video tag.';
+            
+            const source = document.createElement('source');
+            source.src = URL.createObjectURL(file);
+            source.type = file.type;
+            
+            video.appendChild(source);
+            analysisFilePreview.appendChild(video);
+            
+            // Add file type badge
+            const badge = document.createElement('div');
+            badge.className = 'file-type-badge';
+            badge.textContent = 'Video';
+            analysisFilePreview.appendChild(badge);
+            
+        } else if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = 'Selected file preview';
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            analysisFilePreview.appendChild(img);
+            
+            // Add file type badge
+            const badge = document.createElement('div');
+            badge.className = 'file-type-badge';
+            badge.textContent = 'Image';
+            analysisFilePreview.appendChild(badge);
+        } else {
+            // For unsupported file types, show a generic icon
+            const icon = document.createElement('div');
+            icon.innerHTML = '📁';
+            icon.style.fontSize = '3rem';
+            icon.style.color = 'var(--text-secondary)';
+            icon.style.display = 'flex';
+            icon.style.alignItems = 'center';
+            icon.style.justifyContent = 'center';
+            icon.style.height = '100%';
+            analysisFilePreview.appendChild(icon);
+            
+            // Add file type badge
+            const badge = document.createElement('div');
+            badge.className = 'file-type-badge';
+            badge.textContent = 'File';
+            analysisFilePreview.appendChild(badge);
+        }
+    }
+
+    // Handle file upload - FIXED: Only show one preview
     function handleFileUpload(file) {
         // Validate file type
         const validTypes = ['mp4', 'avi', 'mov', 'mkv', 'webm'];
@@ -1429,9 +1559,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Show upload progress
+        // Show upload progress - HIDE the initial preview during upload
         uploadArea.style.display = 'none';
-        filePreviewContainer.style.display = 'none';
+        filePreviewContainer.style.display = 'none'; // Hide the initial preview
         uploadProgress.style.display = 'block';
 
         // Create FormData for file upload
@@ -1481,9 +1611,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 
-    // Start analysis process
+    // Start analysis process - FIXED: Only show one preview
     function startAnalysis(fileId) {
-        // Show analysis section
+        // Create analysis preview from the stored file - ONLY ONE PREVIEW
+        if (currentFile) {
+            createAnalysisPreview(currentFile);
+        }
+        
+        // Show analysis section - ONLY SHOW ANALYSIS PREVIEW
         uploadProgress.style.display = 'none';
         analysisSection.style.display = 'block';
 
@@ -1512,6 +1647,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.error) {
                 throw new Error(data.error);
             }
+            
+            // Store analysis data for detailed report
+            currentAnalysisData = data;
             
             // Show results
             showResults(data);
@@ -1619,6 +1757,137 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Enhanced download report function with all details
+    function downloadDetailedReport() {
+        if (!currentAnalysisData) {
+            alert('No analysis data available to download');
+            return;
+        }
+
+        const data = currentAnalysisData;
+        const fileName = currentFile ? currentFile.name : 'unknown-video';
+        
+        let reportContent = `DEEPSHIELD AI - DEEPFAKE DETECTION ANALYSIS REPORT\n`;
+        reportContent += `==================================================\n\n`;
+        
+        // Basic Information
+        reportContent += `VIDEO INFORMATION:\n`;
+        reportContent += `-------------------\n`;
+        reportContent += `File Name: ${fileName}\n`;
+        reportContent += `Analysis Date: ${new Date().toLocaleString()}\n`;
+        reportContent += `Processing Time: ${data.processing_time ? data.processing_time.toFixed(1) + 's' : 'N/A'}\n\n`;
+        
+        // Final Verdict
+        reportContent += `FINAL ANALYSIS RESULT:\n`;
+        reportContent += `----------------------\n`;
+        reportContent += `Verdict: ${data.verdict || 'N/A'}\n`;
+        reportContent += `Confidence Level: ${data.confidence_level || 'N/A'}\n`;
+        reportContent += `Confidence Score: ${data.confidence ? (data.confidence * 100).toFixed(1) + '%' : 'N/A'}\n`;
+        reportContent += `Raw Fusion Score: ${data.raw_score ? data.raw_score.toFixed(4) : 'N/A'}\n\n`;
+        
+        // Probability Analysis
+        reportContent += `PROBABILITY ANALYSIS:\n`;
+        reportContent += `---------------------\n`;
+        if (data.probabilities) {
+            reportContent += `Fake Probability: ${(data.probabilities.fake_probability * 100).toFixed(1)}%\n`;
+            reportContent += `Real Probability: ${(data.probabilities.real_probability * 100).toFixed(1)}%\n`;
+        } else {
+            reportContent += `Fake Probability: N/A\n`;
+            reportContent += `Real Probability: N/A\n`;
+        }
+        reportContent += `\n`;
+        
+        // Multi-Modal Analysis Details
+        reportContent += `MULTI-MODAL ANALYSIS DETAILS:\n`;
+        reportContent += `------------------------------\n`;
+        if (data.modality_analysis) {
+            const mod = data.modality_analysis;
+            
+            reportContent += `CLAHE Analysis:\n`;
+            reportContent += `  - Average Score: ${mod.clahe.average.toFixed(4)}\n`;
+            reportContent += `  - Vote: ${mod.clahe.vote}\n`;
+            reportContent += `  - Interpretation: ${mod.clahe.average > 0.5 ? 'Indicates FAKE content' : 'Indicates REAL content'}\n\n`;
+            
+            reportContent += `Edge Analysis:\n`;
+            reportContent += `  - Average Score: ${mod.edge.average.toFixed(4)}\n`;
+            reportContent += `  - Vote: ${mod.edge.vote}\n`;
+            reportContent += `  - Interpretation: ${mod.edge.average > 0.5 ? 'Indicates FAKE content' : 'Indicates REAL content'}\n\n`;
+            
+            reportContent += `FFT Analysis:\n`;
+            reportContent += `  - Average Score: ${mod.fft.average.toFixed(4)}\n`;
+            reportContent += `  - Vote: ${mod.fft.vote}\n`;
+            reportContent += `  - Interpretation: ${mod.fft.average > 0.5 ? 'Indicates FAKE content' : 'Indicates REAL content'}\n\n`;
+            
+            reportContent += `LSTM Fusion Analysis:\n`;
+            reportContent += `  - Average Score: ${mod.lstm.average.toFixed(4)}\n`;
+            reportContent += `  - Vote: ${mod.lstm.vote}\n`;
+            reportContent += `  - Interpretation: ${mod.lstm.average > 0.5 ? 'Indicates FAKE content' : 'Indicates REAL content'}\n\n`;
+            
+            reportContent += `MODALITY CONSENSUS:\n`;
+            reportContent += `  - Fake Votes: ${mod.fake_votes}/4 modalities\n`;
+            reportContent += `  - Final Consensus: ${mod.consensus}\n\n`;
+        }
+        
+        // Technical Details
+        reportContent += `TECHNICAL DETAILS:\n`;
+        reportContent += `------------------\n`;
+        reportContent += `Frames Analyzed: ${data.frames_used || 16}\n`;
+        reportContent += `Sequence Length: ${data.sequence_length || 5}\n`;
+        reportContent += `Sequences Processed: ${data.num_sequences || 'N/A'}\n`;
+        reportContent += `Edge Detection Method: ${data.edge_method || 'Canny+Sobel'}\n\n`;
+        
+        // Sequence Analysis
+        reportContent += `SEQUENCE ANALYSIS:\n`;
+        reportContent += `------------------\n`;
+        if (data.sequence_analysis) {
+            const seq = data.sequence_analysis;
+            reportContent += `Fake Sequences: ${seq.fake_sequences || 'N/A'}\n`;
+            reportContent += `Real Sequences: ${seq.real_sequences || 'N/A'}\n`;
+            reportContent += `Fake Sequence Percentage: ${seq.fake_percentage ? (seq.fake_percentage * 100).toFixed(1) + '%' : 'N/A'}\n`;
+            reportContent += `Average LSTM Score: ${seq.average_lstm_score ? seq.average_lstm_score.toFixed(4) : 'N/A'}\n\n`;
+            
+            if (seq.sequence_predictions && seq.sequence_predictions.length > 0) {
+                reportContent += `Individual Sequence Predictions:\n`;
+                seq.sequence_predictions.forEach((pred, index) => {
+                    reportContent += `  Sequence ${index + 1}: ${pred.toFixed(4)} (${pred > 0.5 ? 'FAKE' : 'REAL'})\n`;
+                });
+                reportContent += `\n`;
+            }
+        }
+        
+        // System Information
+        reportContent += `SYSTEM INFORMATION:\n`;
+        reportContent += `-------------------\n`;
+        reportContent += `Analysis Engine: DeepShield AI Enhanced Deepfake Detection\n`;
+        reportContent += `Model Version: Enhanced Multi-Modal Fusion v2.0\n`;
+        reportContent += `Detection Method: Parallel Multi-Modal Analysis\n`;
+        reportContent += `Logic Preserved: ${data.logic_preserved ? 'Yes' : 'No'}\n\n`;
+        
+        // Interpretation Guide
+        reportContent += `INTERPRETATION GUIDE:\n`;
+        reportContent += `---------------------\n`;
+        reportContent += `- Scores closer to 1.0 indicate higher probability of being FAKE\n`;
+        reportContent += `- Scores closer to 0.0 indicate higher probability of being REAL\n`;
+        reportContent += `- Confidence > 85%: VERY HIGH reliability\n`;
+        reportContent += `- Confidence > 75%: HIGH reliability\n`;
+        reportContent += `- Confidence > 65%: MEDIUM reliability\n`;
+        reportContent += `- Confidence < 65%: LOW reliability\n\n`;
+        
+        reportContent += `END OF REPORT\n`;
+        reportContent += `=============\n`;
+        reportContent += `Generated by DeepShield AI - Advanced Deepfake Detection System`;
+
+        const blob = new Blob([reportContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `deepshield-detailed-report-${fileName.replace(/\.[^/.]+$/, "")}-${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
     // Reset upload section
     function resetUploadSection() {
         uploadArea.style.display = 'block';
@@ -1633,6 +1902,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear preview
         filePreview.innerHTML = '';
         fileName.textContent = '';
+        
+        // Clear current file and data
+        currentFile = null;
+        currentAnalysisData = null;
         
         progressFill.style.width = '0%';
         progressFill.style.background = 'linear-gradient(90deg, var(--primary), var(--secondary))';
@@ -1653,35 +1926,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listeners for buttons
     analyzeAnotherBtn.addEventListener('click', resetUploadSection);
     
-    downloadReportBtn.addEventListener('click', function() {
-        const results = {
-            verdict: verdictText.textContent,
-            confidence: confidenceValue.textContent,
-            processingTime: processingTime.textContent,
-            fakeProbability: fakeProbability.textContent,
-            realProbability: realProbability.textContent,
-            timestamp: new Date().toLocaleString()
-        };
-        
-        const reportContent = `DeepShield AI Analysis Report\n\n` +
-                            `Verdict: ${results.verdict}\n` +
-                            `Confidence: ${results.confidence}\n` +
-                            `Processing Time: ${results.processingTime}\n` +
-                            `Fake Probability: ${results.fakeProbability}\n` +
-                            `Real Probability: ${results.realProbability}\n` +
-                            `Analysis Date: ${results.timestamp}\n\n` +
-                            `Generated by DeepShield AI Enhanced Deepfake Detection System`;
-        
-        const blob = new Blob([reportContent], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `deepshield-report-${Date.now()}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    });
+    downloadReportBtn.addEventListener('click', downloadDetailedReport);
 });
 </script>
 {% endblock %}
