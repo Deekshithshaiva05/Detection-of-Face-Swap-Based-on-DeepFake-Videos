@@ -4,7 +4,8 @@ Werkzeug==2.3.7
 Jinja2==3.1.2
 
 # TensorFlow (CPU version - lighter and easier to install)
-tensorflow-cpu==2.13.0
+#tensorflow-cpu==2.13.0
+tensorflow-cpu==2.20.0
 keras==2.13.1
 
 # Computer Vision
