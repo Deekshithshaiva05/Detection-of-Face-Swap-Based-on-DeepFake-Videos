@@ -10,6 +10,8 @@ The system employs a **sophisticated ensemble approach** analyzing multiple visu
 
 ### 🔹 Complete Detection Pipeline
 
+![WhatsApp Image 2025-10-29 at 19 29 37_b69dfc57](https://github.com/user-attachments/assets/03cd0c39-eeb6-41a9-be51-ba2faaa6f881)
+
 #### **Input Processing Stage**
 - Multi-source video input: *FaceForensics++*, *DFDC*, *Celeb-DF*, *Custom datasets*
 - Smart frame extraction (16 frames per video focusing on middle sections)
@@ -31,6 +33,8 @@ The system employs a **sophisticated ensemble approach** analyzing multiple visu
 - Multi-modal probability integration  
 - Final **binary classification (Real vs Fake)** with confidence scoring  
 
+![WhatsApp Image 2025-10-29 at 19 26 23_3f1ebf48](https://github.com/user-attachments/assets/8c8b3845-91c6-42e8-addb-2f6997970ba1)
+
 ---
 
 ## 📊 Performance Excellence
@@ -41,6 +45,8 @@ The system employs a **sophisticated ensemble approach** analyzing multiple visu
 | Texture | CLAHE CNN | **81.95%** | Texture anomaly detection |
 | Boundary | Edge CNN | **79.76%** | Boundary inconsistency detection |
 | Frequency | FFT MesoNet | **70.49%** | Frequency domain artifact detection |
+
+![WhatsApp Image 2025-10-29 at 19 29 03_bc6dbff9](https://github.com/user-attachments/assets/130a6dc9-d4b3-439b-a20f-f45a066bfed7)
 
 ### **Fusion System Performance**
 - **Overall Accuracy:** 88.75% (+6.8% improvement over best individual model)  
@@ -111,6 +117,8 @@ The system employs a **sophisticated ensemble approach** analyzing multiple visu
 ---
 
 ## 🔍 Detection Coverage
+
+![WhatsApp Image 2025-10-29 at 15 54 21_dc67083f](https://github.com/user-attachments/assets/07040045-2fcf-4746-ab4e-580cf56cc7cf)
 
 ### **Supported Deepfake Methods**
 - **FaceSwap-based:** Traditional face replacement techniques  
